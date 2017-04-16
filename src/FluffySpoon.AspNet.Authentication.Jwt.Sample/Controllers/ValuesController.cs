@@ -17,6 +17,27 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample.Controllers
             return new string[] { "this is", "authenticated", "with JWT", ":)" };
 		}
 
+		[HttpGet("needs-admin")]
+		[Authorize(Roles = "Administrator")]
+		public string NeedsAdministratorRights()
+		{
+			return "This is secret";
+		}
+
+		[HttpGet("needs-user")]
+		[Authorize(Roles = "User")]
+		public string NeedsUserRights()
+		{
+			return "This is secret";
+		}
+
+		[HttpGet("needs-mutant")]
+		[Authorize(Roles = "Mutant")]
+		public string NeedsMutantRights()
+		{
+			return "This is secret";
+		}
+
 		[HttpGet("non-secret-stuff")]
 		public string GetNonSecretStuff()
 		{
