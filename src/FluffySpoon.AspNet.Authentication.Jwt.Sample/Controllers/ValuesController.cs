@@ -17,14 +17,6 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample.Controllers
             return new string[] { "this is", "authenticated", "with JWT", ":)" };
 		}
 
-		[HttpGet("sign-out")]
-		[Authorize]
-		public string SignOut()
-		{
-			base.SignOut();
-			return "Signed out";
-		}
-
 		[HttpGet("non-secret-stuff")]
 		public string GetNonSecretStuff()
 		{
