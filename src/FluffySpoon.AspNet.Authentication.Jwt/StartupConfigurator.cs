@@ -35,6 +35,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			{
 				AutomaticAuthenticate = true,
 				AutomaticChallenge = true,
+                SaveToken = false,
 				TokenValidationParameters = tokenValidationParameters
 			});
 		}

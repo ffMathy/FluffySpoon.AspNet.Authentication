@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,13 +36,13 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 		{
 			var claims = new List<Claim>();
 
-			var identity = await _identityResolver.GetClaimsAsync(credentials);
-			if (identity == null)
+			var claimsResult = await _identityResolver.GetClaimsAsync(credentials);
+			if (claimsResult == null)
 				return claims;
 			
 			claims.AddRange(new []
 			{
-				new Claim(JwtRegisteredClaimNames.Sub, credentials.Username),
+				new Claim(JwtRegisteredClaimNames.Sub, credentials.Username.ToLower()),
 				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 				new Claim(JwtRegisteredClaimNames.Iat,
 					new DateTimeOffset(requestTime)
@@ -51,7 +52,18 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 					ClaimValueTypes.Integer64)
 			});
 
-			claims.AddRange(identity.Claims);
+            foreach(var role in claimsResult.Roles)
+            {
+              claims.Add(new Claim(
+                "fluffy-spoon.authentication.jwt.role",
+                role));
+            }
+      
+			claims.AddRange(claimsResult
+                .Claims
+                .Select(x => new Claim(
+                  x.Key,
+                  x.Value)));
 
 			return claims;
 		}
