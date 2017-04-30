@@ -39,6 +39,8 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			var claimsResult = await _identityResolver.GetClaimsAsync(credentials);
 			if (claimsResult == null)
 				return claims;
+
+
 			
 			claims.AddRange(new []
 			{
@@ -55,7 +57,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
             foreach(var role in claimsResult.Roles)
             {
               claims.Add(new Claim(
-                "fluffy-spoon.authentication.jwt.role",
+                ClaimTypes.Role,
                 role));
             }
       
