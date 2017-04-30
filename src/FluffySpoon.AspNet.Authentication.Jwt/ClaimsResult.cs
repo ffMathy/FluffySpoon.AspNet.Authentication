@@ -4,9 +4,15 @@ using System.Text;
 
 namespace FluffySpoon.AspNet.Authentication.Jwt
 {
-    public class ClaimsResult
+  public class ClaimsResult
+  {
+    public string[] Roles { get; set; }
+    public IDictionary<string, string> Claims { get; set; }
+
+    public ClaimsResult()
     {
-      public string[] Roles { get; set; }
-      public IDictionary<string, string> Claims { get; set; }
+      Roles = new string[0];
+      Claims = new Dictionary<string, string>();
     }
+  }
 }

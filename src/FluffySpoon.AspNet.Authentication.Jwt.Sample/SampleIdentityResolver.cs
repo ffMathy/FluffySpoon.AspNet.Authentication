@@ -19,15 +19,15 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
       {
         Roles = new[]
         {
-                "Administrator",
-                "User"
-              },
+          "Administrator",
+          "User"
+        },
         Claims = new Dictionary<string, string>()
-              {
-                { "email", "foo@bar.com" },
-                { "first_name", "Mathias" },
-                { "last_name", "Lorenzen" }
-              }
+        {
+          { "email", "foo@bar.com" },
+          { "first_name", "Mathias" },
+          { "last_name", "Lorenzen" }
+        }
       };
 
       return Task.FromResult(result);
