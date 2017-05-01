@@ -38,6 +38,8 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
                 SaveToken = false,
 				TokenValidationParameters = tokenValidationParameters
 			});
+
+            app.Use
 		}
 	}
 }

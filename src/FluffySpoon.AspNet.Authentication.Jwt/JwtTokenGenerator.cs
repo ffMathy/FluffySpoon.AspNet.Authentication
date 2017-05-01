@@ -47,14 +47,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
       claims.AddRange(new[]
       {
-          new Claim(JwtRegisteredClaimNames.Sub, credentials.Username.ToLower()),
-          new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-          new Claim(JwtRegisteredClaimNames.Iat,
-              new DateTimeOffset(requestTime)
-                  .ToUniversalTime()
-                  .ToUnixTimeSeconds()
-                  .ToString(),
-              ClaimValueTypes.Integer64)
+          new Claim(JwtRegisteredClaimNames.Sub, credentials.Username.ToLower())
       });
 
       foreach (var role in claimsResult.Roles)
@@ -82,7 +75,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
       var claims = (await getClaimsCallback(
         context,
-        now));
+        now)).ToList();
       if (!claims.Any())
       {
         response.StatusCode = 403;
@@ -90,12 +83,23 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
         return;
       }
 
+      claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+      claims.Add(
+        new Claim(
+          JwtRegisteredClaimNames.Iat,
+          new DateTimeOffset(now)
+              .ToUniversalTime()
+              .ToUnixTimeSeconds()
+              .ToString(),
+          ClaimValueTypes.Integer64));
+
       var principal = new ClaimsPrincipal(
         new ClaimsIdentity(claims));
       context.User = principal;
 
       var jwt = GenerateJwtToken(now, claims);
-      await WriteTokenToResponse(response, jwt);
+      var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+      response.Headers.Add("Token", encodedJwt);
     }
 
     public async Task RefreshAndEmitTokenInResponseAsync(HttpContext context)
@@ -132,25 +136,6 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
           claims.Add(new Claim("fluffy-spoon.authentication.jwt.username", credentials.Username));
           return claims;
         });
-    }
-
-    private async Task WriteTokenToResponse(
-      HttpResponse response, 
-      JwtSecurityToken jwt)
-    {
-      var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-      var jwtResponse = new
-      {
-        access_token = encodedJwt
-      };
-
-      response.ContentType = "application/json";
-
-      await response.WriteAsync(
-          JsonConvert.SerializeObject(
-              jwtResponse,
-              _serializerSettings));
     }
 
     private JwtSecurityToken GenerateJwtToken(DateTime now, IEnumerable<Claim> claims)
