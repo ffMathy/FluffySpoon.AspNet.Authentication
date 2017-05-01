@@ -80,9 +80,9 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
       var now = DateTime.UtcNow;
       var response = context.Response;
 
-      var claims = await getClaimsCallback(
+      var claims = (await getClaimsCallback(
         context,
-        now);
+        now));
       if (!claims.Any())
       {
         response.StatusCode = 403;
@@ -124,9 +124,14 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
     {
       await EmitTokenInResponseAsync(
         context,
-        async (c, now) => await GetClaimsAsync(
-          credentials, 
-          now));
+        async (c, now) =>
+        {
+          var claims = (await GetClaimsAsync(
+            credentials,
+            now)).ToList();
+          claims.Add(new Claim("fluffy-spoon.authentication.jwt.username", credentials.Username));
+          return claims;
+        });
     }
 
     private async Task WriteTokenToResponse(
