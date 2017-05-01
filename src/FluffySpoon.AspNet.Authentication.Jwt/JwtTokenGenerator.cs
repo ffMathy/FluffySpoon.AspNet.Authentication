@@ -73,42 +73,82 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
       return claims;
     }
 
-    public async Task EmitTokenInResponseAsync(
-        HttpResponse response,
-        Credentials credentials)
+    private async Task EmitTokenInResponseAsync(
+      HttpContext context,
+      Func<HttpContext, DateTime, Task<IEnumerable<Claim>>> getClaimsCallback)
     {
       var now = DateTime.UtcNow;
+      var response = context.Response;
 
-      var claims = await GetClaimsAsync(credentials, now);
-      if (claims.Count == 0)
+      var claims = await getClaimsCallback(
+        context,
+        now);
+      if (!claims.Any())
       {
         response.StatusCode = 403;
         await response.WriteAsync("Forbidden");
         return;
       }
 
+      var principal = new ClaimsPrincipal(
+        new ClaimsIdentity(claims));
+      context.User = principal;
+
       var jwt = GenerateJwtToken(now, claims);
-      await EmitTokenAsync(response, jwt);
+      await WriteTokenToResponse(response, jwt);
     }
 
-    private async Task EmitTokenAsync(HttpResponse response, JwtSecurityToken jwt)
+    public async Task RefreshAndEmitTokenInResponseAsync(HttpContext context)
+    {
+      var user = context.User;
+      if (user == null)
+        throw new InvalidOperationException("Can't refresh a token when user is not already authenticated.");
+
+      await EmitTokenInResponseAsync(
+        context,
+        (c, now) => Task.FromResult(c.User.Claims));
+    }
+
+    public async Task EmitAnonymousTokenInResponseAsync(HttpContext context)
+    {
+      await EmitTokenInResponseAsync(
+        context,
+        (c, now) => Task.FromResult(new Claim[] {
+          new Claim("fluffy-spoon.authentication.jwt.anonymous", "true")
+        }.AsEnumerable()));
+    }
+
+    public async Task AuthenticateAndEmitTokenInResponseAsync(
+        HttpContext context,
+        Credentials credentials)
+    {
+      await EmitTokenInResponseAsync(
+        context,
+        async (c, now) => await GetClaimsAsync(
+          credentials, 
+          now));
+    }
+
+    private async Task WriteTokenToResponse(
+      HttpResponse response, 
+      JwtSecurityToken jwt)
     {
       var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
       var jwtResponse = new
       {
-        access_token = encodedJwt,
-        expires_in = (int)_settings.Expiration.TotalSeconds
+        access_token = encodedJwt
       };
 
       response.ContentType = "application/json";
+
       await response.WriteAsync(
           JsonConvert.SerializeObject(
               jwtResponse,
               _serializerSettings));
     }
 
-    private JwtSecurityToken GenerateJwtToken(DateTime now, IReadOnlyCollection<Claim> claims)
+    private JwtSecurityToken GenerateJwtToken(DateTime now, IEnumerable<Claim> claims)
     {
       var issuerSigningKey = SigningKeyHelper.GenerateKeyFromSecret(_settings.SecretKey);
       var signingCredentials = new SigningCredentials(
