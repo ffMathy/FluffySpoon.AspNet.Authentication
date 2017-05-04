@@ -43,30 +43,5 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample.Controllers
     {
       return "This is not authenticated with JWT";
     }
-
-    [HttpGet("gief-token")]
-    public async Task GenerateToken(
-      string username,
-      string password)
-    {
-      var generator = new JwtTokenGenerator(
-          new SampleIdentityResolver(),
-          SampleJwtSettingsHelper.GenerateSettings());
-      await generator.AuthenticateAndEmitTokenInResponseAsync(
-          HttpContext,
-          new Credentials(
-              username,
-              password));
-    }
-
-    [HttpGet("refresh-token")]
-    [Authorize]
-    public async Task RefreshToken()
-    {
-      var generator = new JwtTokenGenerator(
-          new SampleIdentityResolver(),
-          SampleJwtSettingsHelper.GenerateSettings());
-      await generator.RefreshAndEmitTokenInResponseAsync(HttpContext);
-    }
   }
 }

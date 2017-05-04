@@ -11,10 +11,8 @@ using System.Threading.Tasks;
 
 namespace FluffySpoon.AspNet.Authentication.Jwt
 {
-  public class JwtTokenGenerator
+  public class JwtTokenGenerator : IJwtTokenGenerator
   {
-    private readonly JsonSerializerSettings _serializerSettings;
-
     private readonly IIdentityResolver _identityResolver;
     private readonly IJwtSettings _settings;
 
@@ -24,67 +22,16 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
     {
       _settings = settings;
       _identityResolver = identityResolver;
-      _serializerSettings = new JsonSerializerSettings
-      {
-        Formatting = Formatting.Indented
-      };
     }
 
-    private async Task<IReadOnlyCollection<Claim>> GetClaimsAsync(
-        Credentials credentials,
-        DateTime requestTime)
-    {
-      var claims = new List<Claim>();
-
-      var claimsResult = await _identityResolver.GetClaimsAsync(credentials);
-      if (claimsResult == null)
-        return claims;
-
-      if (claimsResult.Claims.Any(x => x.Key == ClaimTypes.Role))
-      {
-        throw new InvalidOperationException("Role claims should be set via the roles property.");
-      }
-
-      claims.AddRange(new[]
-      {
-          new Claim(JwtRegisteredClaimNames.Sub, credentials.Username.ToLower())
-      });
-
-      foreach (var role in claimsResult.Roles)
-      {
-        claims.Add(new Claim(
-          ClaimTypes.Role,
-          role));
-      }
-
-      claims.AddRange(claimsResult
-          .Claims
-          .Select(x => new Claim(
-            x.Key,
-            x.Value)));
-
-      return claims;
-    }
-
-    private async Task EmitTokenInResponseAsync(
-      HttpContext context,
-      Func<HttpContext, DateTime, Task<IEnumerable<Claim>>> getClaimsCallback)
+    public string GenerateToken(
+      params Claim[] claims)
     {
       var now = DateTime.UtcNow;
-      var response = context.Response;
 
-      var claims = (await getClaimsCallback(
-        context,
-        now)).ToList();
-      if (!claims.Any())
-      {
-        response.StatusCode = 403;
-        await response.WriteAsync("Forbidden");
-        return;
-      }
-
-      claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-      claims.Add(
+      var claimsList = new List<Claim>();
+      claimsList.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+      claimsList.Add(
         new Claim(
           JwtRegisteredClaimNames.Iat,
           new DateTimeOffset(now)
@@ -93,49 +40,9 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
               .ToString(),
           ClaimValueTypes.Integer64));
 
-      var principal = new ClaimsPrincipal(
-        new ClaimsIdentity(claims));
-      context.User = principal;
-
       var jwt = GenerateJwtToken(now, claims);
       var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-      response.Headers.Add("Token", encodedJwt);
-    }
-
-    public async Task RefreshAndEmitTokenInResponseAsync(HttpContext context)
-    {
-      var user = context.User;
-      if (user == null)
-        throw new InvalidOperationException("Can't refresh a token when user is not already authenticated.");
-
-      await EmitTokenInResponseAsync(
-        context,
-        (c, now) => Task.FromResult(c.User.Claims));
-    }
-
-    public async Task EmitAnonymousTokenInResponseAsync(HttpContext context)
-    {
-      await EmitTokenInResponseAsync(
-        context,
-        (c, now) => Task.FromResult(new Claim[] {
-          new Claim("fluffy-spoon.authentication.jwt.anonymous", "true")
-        }.AsEnumerable()));
-    }
-
-    public async Task AuthenticateAndEmitTokenInResponseAsync(
-        HttpContext context,
-        Credentials credentials)
-    {
-      await EmitTokenInResponseAsync(
-        context,
-        async (c, now) =>
-        {
-          var claims = (await GetClaimsAsync(
-            credentials,
-            now)).ToList();
-          claims.Add(new Claim("fluffy-spoon.authentication.jwt.username", credentials.Username));
-          return claims;
-        });
+      return encodedJwt;
     }
 
     private JwtSecurityToken GenerateJwtToken(DateTime now, IEnumerable<Claim> claims)
