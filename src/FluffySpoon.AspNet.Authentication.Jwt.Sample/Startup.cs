@@ -29,14 +29,28 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddFluffySpoonJwt(
+              new SampleIdentityResolver(),
+              new JwtSettings()
+              {
+                Audience = "https://www.example.com",
+                Expiration = TimeSpan.FromDays(30),
+                Issuer = "FluffySpoon sample",
+                SecretKey = "very secret - such wow"
+              });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(
+          IApplicationBuilder app, 
+          IHostingEnvironment env, 
+          ILoggerFactory loggerFactory,
+          IJwtSettings settings)
         {
             loggerFactory.AddDebug();
 
-			app.UseFluffySpoonJwt(SampleJwtSettingsHelper.GenerateSettings());
+			app.UseFluffySpoonJwt(settings);
 
             app.UseMvc();
         }

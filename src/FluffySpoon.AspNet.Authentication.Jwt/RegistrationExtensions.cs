@@ -11,8 +11,15 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
   {
     public static void AddFluffySpoonJwt(
       this IServiceCollection services,
-      IIdentityResolver identityResolver)
+      IIdentityResolver identityResolver,
+      IJwtSettings jwtSettings)
     {
+      var tokenGenerator = new JwtTokenGenerator(
+        identityResolver,
+        jwtSettings);
+      services.AddSingleton<IJwtTokenGenerator>(tokenGenerator);
+
+      services.AddSingleton(jwtSettings);
       services.AddSingleton(identityResolver);
     }
 
