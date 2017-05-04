@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -25,8 +26,10 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
       IJwtTokenGenerator generator,
       IIdentityResolver identityResolver)
     {
+      qwdkqwd //TODO: have a pre auth filter that can set the user before normal JWT middleware kicks in for the auth part.
+
       string token;
-      if (context.User != null)
+      if (context?.User?.Claims?.Any() == true)
       {
         token = generator.GenerateToken(context
           .User
@@ -35,14 +38,15 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
       }
       else
       {
-        var authorization = context.Request.Headers["Authorization"].SingleOrDefault();
+        var headers = (FrameRequestHeaders)context.Request.Headers;
+        var authorization = headers.HeaderAuthorization.SingleOrDefault();
 
         const string authorizationPrefix = "FluffySpoon ";
         if (authorization != null && authorization.StartsWith(authorizationPrefix))
         {
           var credentialsCode = authorization.Substring(authorizationPrefix.Length);
           var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(credentialsCode));
-          var credentials = JsonConvert.DeserializeObject<Credentials>(credentialsCode);
+          var credentials = JsonConvert.DeserializeObject<Credentials>(decoded);
 
           var claimsResult = await identityResolver.GetClaimsAsync(credentials);
 
