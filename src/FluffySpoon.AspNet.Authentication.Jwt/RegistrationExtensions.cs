@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FluffySpoon.AspNet.Authentication.Jwt
 {
@@ -39,15 +41,29 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
         ClockSkew = TimeSpan.Zero
       };
 
+      app.UseMiddleware<PreAuthorizationMiddleware>();
+
       app.UseJwtBearerAuthentication(new JwtBearerOptions
       {
         AutomaticAuthenticate = true,
         AutomaticChallenge = true,
         SaveToken = false,
-        TokenValidationParameters = tokenValidationParameters
+        TokenValidationParameters = tokenValidationParameters,
+        Events = new JwtBearerEvents()
+        {
+          OnMessageReceived = (context) =>
+          {
+            const string tokenKey = "fluffy-spoon.authentication.jwt.token";
+            if (context.HttpContext.Items.ContainsKey(tokenKey))
+            {
+              context.Token = (string)context.HttpContext.Items[tokenKey];
+            }
+            return Task.CompletedTask;
+          }
+        }
       });
 
-      app.UseMiddleware<AuthorizationMiddleware>();
+      app.UseMiddleware<PostAuthorizationMiddleware>();
     }
   }
 }
