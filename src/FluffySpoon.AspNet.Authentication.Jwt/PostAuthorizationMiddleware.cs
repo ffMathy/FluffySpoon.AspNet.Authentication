@@ -44,6 +44,10 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
         .Headers
         .Add("Token", token);
 
+      if(context.Request.Path == "/api/token") {
+          return;
+      }                                               
+
       await _next(context);
     }
 
