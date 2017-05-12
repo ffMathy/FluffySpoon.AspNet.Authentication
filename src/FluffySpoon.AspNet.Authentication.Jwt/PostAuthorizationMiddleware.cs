@@ -12,44 +12,46 @@ using System.Threading.Tasks;
 
 namespace FluffySpoon.AspNet.Authentication.Jwt
 {
-  class PostAuthorizationMiddleware
-  {
-    private readonly RequestDelegate _next;
-
-    public PostAuthorizationMiddleware(RequestDelegate next)
+    class PostAuthorizationMiddleware
     {
-      _next = next;
+        private readonly RequestDelegate _next;
+
+        public PostAuthorizationMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task Invoke(
+          HttpContext context,
+          IJwtTokenGenerator generator)
+        {
+            string token;
+            if (context?.User?.Claims?.Any() == true)
+            {
+                token = generator.GenerateToken(context
+                  .User
+                  .Claims
+                  .ToArray());
+            }
+            else
+            {
+                token = generator.GenerateToken(
+                  new Claim("fluffy-spoon.authentication.jwt.isAnonymous", "true"));
+            }
+
+            context
+              .Response
+              .Headers
+              .Add("Token", token);
+
+            if (context.Items.ContainsKey("fluffy-spoon.authentication.jwt.token"))
+            {
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
+                return;
+            }
+
+            await _next(context);
+        }
+
     }
-
-    public async Task Invoke(
-      HttpContext context,
-      IJwtTokenGenerator generator)
-    {
-      string token;
-      if (context?.User?.Claims?.Any() == true)
-      {
-        token = generator.GenerateToken(context
-          .User
-          .Claims
-          .ToArray());
-      }
-      else
-      {
-        token = generator.GenerateToken(
-          new Claim("fluffy-spoon.authentication.jwt.isAnonymous", "true"));
-      }
-
-      context
-        .Response
-        .Headers
-        .Add("Token", token);
-
-      if(context.Request.Path == "/api/token") {
-          return;
-      }                                               
-
-      await _next(context);
-    }
-
-  }
 }
