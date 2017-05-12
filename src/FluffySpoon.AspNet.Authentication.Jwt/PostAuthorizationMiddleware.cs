@@ -28,10 +28,17 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
             string token;
             if (context?.User?.Claims?.Any() == true)
             {
-                token = generator.GenerateToken(context
-                  .User
-                  .Claims
-                  .ToArray());
+                if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
+                {
+                    token = (string)context.Items[Constants.MiddlewareTokenPassingKey];
+                }
+                else
+                {
+                    token = generator.GenerateToken(context
+                      .User
+                      .Claims
+                      .ToArray());
+                }
             }
             else
             {
@@ -44,7 +51,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
               .Headers
               .Add("Token", token);
 
-            if (context.Items.ContainsKey("fluffy-spoon.authentication.jwt.token"))
+            if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
             {
                 context.Response.StatusCode = StatusCodes.Status204NoContent;
                 return;

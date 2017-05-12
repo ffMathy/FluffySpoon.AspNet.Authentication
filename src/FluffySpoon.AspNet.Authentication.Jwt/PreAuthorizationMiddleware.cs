@@ -78,7 +78,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
           credentials.Username));
 
         var token = generator.GenerateToken(claims.ToArray());
-        context.Items.Add("fluffy-spoon.authentication.jwt.token", token);
+        context.Items.Add(Constants.MiddlewareTokenPassingKey, token);
       }
 
       await _next(context);
