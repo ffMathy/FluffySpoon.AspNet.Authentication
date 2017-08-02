@@ -52,6 +52,12 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
         var claimsResult = await identityResolver.GetClaimsAsync(credentials);
 
+        if (claimsResult == null)
+        {
+            await _next(context);
+            return;      
+        }
+
         var claims = claimsResult
           .Claims
           .Select(x => new Claim(
