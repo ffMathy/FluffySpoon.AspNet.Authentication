@@ -45,12 +45,11 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
         public void Configure(
           IApplicationBuilder app, 
           IHostingEnvironment env, 
-          ILoggerFactory loggerFactory,
-          IJwtSettings settings)
+          ILoggerFactory loggerFactory)
         {
             loggerFactory.AddDebug();
 
-			app.UseFluffySpoonJwt(settings);
+			app.UseFluffySpoonJwt();
 
             app.UseMvc();
         }

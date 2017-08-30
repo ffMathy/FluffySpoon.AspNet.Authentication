@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
           IJwtTokenGenerator generator)
         {
             string token;
-            if (context?.User?.Claims?.Any() == true)
+            if (context?.Items?.Any() == true)
             {
                 if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
                 {
@@ -39,22 +38,18 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
                       .Claims
                       .ToArray());
                 }
-            }
-            else
-            {
-                token = generator.GenerateToken(
-                  new Claim("fluffy-spoon.authentication.jwt.isAnonymous", "true"));
-            }
 
-            context
-              .Response
-              .Headers
-              .Add("Token", token);
+                context
+                  .Response
+                  .Headers
+                  .Add("Token", token);
 
-            if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
-            {
-                context.Response.StatusCode = StatusCodes.Status204NoContent;
-                return;
+                if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
+                {
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    await _next(context);
+                    return;
+                }
             }
 
             await _next(context);
