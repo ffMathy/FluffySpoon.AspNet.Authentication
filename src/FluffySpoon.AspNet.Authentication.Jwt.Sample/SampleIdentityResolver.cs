@@ -8,14 +8,12 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
 {
   public class SampleIdentityResolver : IIdentityResolver
   {
-    public Task<ClaimsResult> GetClaimsAsync(Credentials credentials)
+    public async Task<ClaimsResult> GetClaimsAsync(Credentials credentials)
     {
       if (credentials.Username != "foo" || credentials.Password != "bar")
-      {
-        return Task.FromResult<ClaimsResult>(null);
-      }
+        return null;
 
-      var result = new ClaimsResult()
+      return new ClaimsResult()
       {
         Roles = new[]
         {
@@ -29,8 +27,6 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
           { "last_name", "Lorenzen" }
         }
       };
-
-      return Task.FromResult(result);
     }
   }
 }

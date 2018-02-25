@@ -30,8 +30,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
             // Add framework services.
             services.AddMvc();
 
-            services.AddFluffySpoonJwt(
-              new SampleIdentityResolver(),
+            services.AddFluffySpoonJwt<SampleIdentityResolver>(
               new JwtSettings()
               {
                 Audience = "https://www.example.com",

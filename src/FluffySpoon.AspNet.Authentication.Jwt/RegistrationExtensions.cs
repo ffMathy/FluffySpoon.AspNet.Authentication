@@ -11,18 +11,19 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 {
 	public static class RegistrationExtensions
 	{
-		public static void AddFluffySpoonJwt(
+		public static void AddFluffySpoonJwt<TIdentityResolver>(
 		  this IServiceCollection services,
-		  IIdentityResolver identityResolver,
-		  IJwtSettings jwtSettings)
+		  IJwtSettings jwtSettings) where TIdentityResolver : IIdentityResolver
 		{
-			var tokenGenerator = new JwtTokenGenerator(
-			  identityResolver,
-			  jwtSettings);
-			services.AddSingleton<IJwtTokenGenerator>(tokenGenerator);
+			services.AddSingleton<IJwtTokenGenerator>(provider => 
+				new JwtTokenGenerator(
+					provider.GetRequiredService<IIdentityResolver>(),
+					jwtSettings));
 
 			services.AddSingleton(jwtSettings);
-			services.AddSingleton(identityResolver);
+
+			services.AddSingleton<IIdentityResolver>(provider => 
+				provider.GetRequiredService<TIdentityResolver>());
 
             var tokenValidationParameters = new TokenValidationParameters
             {
