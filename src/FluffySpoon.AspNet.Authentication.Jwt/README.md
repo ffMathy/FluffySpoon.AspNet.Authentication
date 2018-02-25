@@ -1,6 +1,6 @@
 # Usage example
 ## Writing the code needed
-### Configure the services needed
+### Configure the services
 Add the following code to your `Startup` class' `ConfigureServices` method with real values instead of the sample values:
 
 ```
@@ -65,7 +65,7 @@ Let's say we want to authenticate with the username "foo" and the password "bar"
 
 1. We create a JSON blob containing the `Username` and `Password` property: `{ Username: "foo", Password: "bar" }`.
 2. We Base64 encode it: `eyBVc2VybmFtZTogImZvbyIsIFBhc3N3b3JkOiAiYmFyIiB9`.
-3. We send that to a random URL (for instance `https://example.com/get-me-a-new-token-or-whatever) with the header `Authorization: FluffySpoon eyBVc2VybmFtZTogImZvbyIsIFBhc3N3b3JkOiAiYmFyIiB9`.
+3. We send that to a random URL (for instance `https://example.com/get-me-a-new-token-or-whatever`) with the header `Authorization: FluffySpoon eyBVc2VybmFtZTogImZvbyIsIFBhc3N3b3JkOiAiYmFyIiB9`.
 4. The server responds with a `Token` header like `Token: MYTOKEN` where `MYTOKEN` is the generated JWT token for the client.
 5. In future requests, we add the header `Authorization: Bearer MYTOKEN` to authenticate ourselves.
 6. Should the token expire, the server will send a new one automatically in the `Token` header.
