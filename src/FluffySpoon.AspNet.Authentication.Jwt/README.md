@@ -28,7 +28,7 @@ public class SampleIdentityResolver : IIdentityResolver
 	public async Task<ClaimsResult> GetClaimsAsync(Credentials credentials)
 	{
 		if (credentials.Username != "foo" || credentials.Password != "bar")
-		return null;
+			return null;
 
 		return new ClaimsResult()
 		{
