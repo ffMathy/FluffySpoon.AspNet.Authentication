@@ -13,17 +13,18 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 	{
 		public static void AddFluffySpoonJwt<TIdentityResolver>(
 		  this IServiceCollection services,
-		  IJwtSettings jwtSettings) where TIdentityResolver : IIdentityResolver
+		  IJwtSettings jwtSettings) where TIdentityResolver : class, IIdentityResolver
 		{
+			services.AddTransient<TIdentityResolver>();
+			services.AddSingleton<IIdentityResolver>(provider =>
+				provider.GetRequiredService<TIdentityResolver>());
+
 			services.AddSingleton<IJwtTokenGenerator>(provider => 
 				new JwtTokenGenerator(
 					provider.GetRequiredService<IIdentityResolver>(),
 					jwtSettings));
 
 			services.AddSingleton(jwtSettings);
-
-			services.AddSingleton<IIdentityResolver>(provider => 
-				provider.GetRequiredService<TIdentityResolver>());
 
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -56,6 +57,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 							{
 								context.Token = (string)context.HttpContext.Items[tokenKey];
 							}
+
 							return Task.CompletedTask;
 						}
 					};
