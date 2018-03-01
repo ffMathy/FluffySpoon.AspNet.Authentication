@@ -46,7 +46,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
                 if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
                 {
-                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    context.Response.StatusCode = StatusCodes.Status201Created;
                     await _next(context);
                     return;
                 }
