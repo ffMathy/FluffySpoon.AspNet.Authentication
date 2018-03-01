@@ -26,18 +26,18 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddMvc();
+		{
+			services.AddFluffySpoonJwt<SampleIdentityResolver>(
+			  new JwtSettings()
+			  {
+				  Audience = "https://www.example.com",
+				  Expiration = TimeSpan.FromDays(30),
+				  Issuer = "FluffySpoon sample",
+				  SecretKey = "very secret - such wow"
+			  });
 
-            services.AddFluffySpoonJwt<SampleIdentityResolver>(
-              new JwtSettings()
-              {
-                Audience = "https://www.example.com",
-                Expiration = TimeSpan.FromDays(30),
-                Issuer = "FluffySpoon sample",
-                SecretKey = "very secret - such wow"
-              });
+			// Add framework services.
+			services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,7 +47,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
           ILoggerFactory loggerFactory)
         {
             loggerFactory.AddDebug();
-
+			
 			app.UseFluffySpoonJwt();
 
             app.UseMvc();

@@ -18,7 +18,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			services.AddScoped<IIdentityResolver, TIdentityResolver>();
 			services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 			
-			services.AddSingleton<IJwtSettings>(jwtSettings);
+			services.AddSingleton(jwtSettings);
 
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -32,24 +32,22 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
                 ClockSkew = TimeSpan.Zero
             };
 
-            services.AddAuthentication(options =>
-				{
+            services
+				.AddAuthentication(options => {
 					options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 					options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 					options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
 				})
-				.AddJwtBearer(options =>
-				{
+				.AddJwtBearer(options => {
 					options.SaveToken = false;
 					options.TokenValidationParameters = tokenValidationParameters;
 					options.Events = new JwtBearerEvents()
 					{
 						OnMessageReceived = (context) =>
 						{
-							const string tokenKey = "fluffy-spoon.authentication.jwt.token";
-							if (context.HttpContext.Items.ContainsKey(tokenKey))
+							if (context.HttpContext.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
 							{
-								context.Token = (string)context.HttpContext.Items[tokenKey];
+								context.Token = (string)context.HttpContext.Items[Constants.MiddlewareTokenPassingKey];
 							}
 
 							return Task.CompletedTask;
@@ -62,7 +60,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			this IApplicationBuilder app)
 		{
             app.UseMiddleware<PreAuthorizationMiddleware>();
-
+			app.UseAuthentication();
 			app.UseMiddleware<PostAuthorizationMiddleware>();
 		}
 	}
