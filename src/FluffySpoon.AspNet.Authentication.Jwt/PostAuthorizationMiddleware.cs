@@ -24,10 +24,10 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
           HttpContext context,
           IJwtTokenGenerator generator)
         {
-            string token;
-            if (context?.Items?.Any() == true)
+	        if (context?.Items?.Any() == true)
             {
-                if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
+	            string token;
+	            if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
                 {
                     token = (string)context.Items[Constants.MiddlewareTokenPassingKey];
                 }
@@ -47,7 +47,6 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
                 if (context.Items.ContainsKey(Constants.MiddlewareTokenPassingKey))
                 {
                     context.Response.StatusCode = StatusCodes.Status201Created;
-                    await _next(context);
                     return;
                 }
             }

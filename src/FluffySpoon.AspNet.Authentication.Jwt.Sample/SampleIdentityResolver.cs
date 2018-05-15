@@ -10,6 +10,9 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
   {
     public async Task<ClaimsResult> GetClaimsAsync(Credentials credentials)
     {
+		if(credentials == null)
+			return new ClaimsResult();
+
       if (credentials.Username != "foo" || credentials.Password != "bar")
         return null;
 
