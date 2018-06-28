@@ -29,8 +29,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 		  IIdentityResolver identityResolver,
 		  ILogger<PreAuthorizationMiddleware> logger)
 		{
-			var requestHeaders = (FrameRequestHeaders)context.Request.Headers;
-			var authorization = requestHeaders.HeaderAuthorization.SingleOrDefault();
+			var authorization = context.Request.Headers.SingleOrDefault(x => x.Key == "Authorization").Value.SingleOrDefault();
 
 			const string authorizationPrefix = "FluffySpoon";
 			if (authorization != null && authorization.StartsWith(authorizationPrefix))
