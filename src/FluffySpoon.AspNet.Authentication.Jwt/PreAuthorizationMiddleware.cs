@@ -33,23 +33,26 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
 			Credentials credentials = null;
 
-			const string authorizationPrefix = "FluffySpoon";
-			if (authorization != null && authorization.StartsWith(authorizationPrefix))
+			const string fluffySpoonAuthorizationPrefix = "FluffySpoon";
+			if (authorization != null)
 			{
-				try
+				if (authorization.StartsWith(fluffySpoonAuthorizationPrefix))
 				{
-					var credentialsCode = authorization.Substring(authorizationPrefix.Length).Trim();
-					if (!string.IsNullOrWhiteSpace(credentialsCode))
+					try
 					{
-						var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(credentialsCode));
-						credentials = JsonConvert.DeserializeObject<Credentials>(decoded);
+						var credentialsCode = authorization.Substring(fluffySpoonAuthorizationPrefix.Length).Trim();
+						if (!string.IsNullOrWhiteSpace(credentialsCode))
+						{
+							var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(credentialsCode));
+							credentials = JsonConvert.DeserializeObject<Credentials>(decoded);
+						}
 					}
-				}
-				catch
-				{
-					logger.LogWarning("The given FluffySpoon authorization header was of an invalid format.");
-					await _next(context);
-					return;
+					catch
+					{
+						logger.LogWarning("The given FluffySpoon authorization header was of an invalid format.");
+						await _next(context);
+						return;
+					}
 				}
 			}
 
@@ -85,9 +88,8 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 
 			var token = generator.GenerateToken(claims.ToArray());
 			context.Items.Add(Constants.MiddlewareTokenPassingKey, token);
-			
+
 			await _next(context);
 		}
 	}
-}
 }
