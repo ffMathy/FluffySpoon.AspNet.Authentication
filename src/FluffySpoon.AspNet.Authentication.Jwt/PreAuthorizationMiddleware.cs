@@ -34,6 +34,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			Credentials credentials = null;
 
 			const string fluffySpoonAuthorizationPrefix = "FluffySpoon";
+			const string tokenAuthorizationPrefix = "Bearer";
 			if (authorization != null)
 			{
 				if (authorization.StartsWith(fluffySpoonAuthorizationPrefix))
@@ -53,6 +54,10 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 						await _next(context);
 						return;
 					}
+				} else if (authorization.StartsWith(tokenAuthorizationPrefix))
+				{
+					await _next(context);
+					return;
 				}
 			}
 
