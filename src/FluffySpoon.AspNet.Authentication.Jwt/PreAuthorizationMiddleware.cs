@@ -35,7 +35,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 			const string tokenAuthorizationPrefix = "Bearer";
 			if (authorization != null)
 			{
-				var credentials = new Credentials();
+				var credentials = new Credentials(null, null);
 				if (authorization.StartsWith(fluffySpoonAuthorizationPrefix))
 				{
 					try
@@ -53,40 +53,40 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 						await _next(context);
 						return;
 					}
+
+					var claimsResult = await identityResolver.GetClaimsAsync(credentials);
+					if (claimsResult == null)
+					{
+						await _next(context);
+						return;
+					}
+
+					var claims = claimsResult
+					  .Claims
+					  .Select(x => new Claim(
+						x.Key,
+						x.Value))
+					  .ToList();
+					if (claims.Any(x => x.ValueType == ClaimTypes.Role))
+					{
+						throw new InvalidOperationException("Can't provide roles through claims. Use the roles array instead of the claims result.");
+					}
+
+					foreach (var role in claimsResult.Roles)
+					{
+						claims.Add(new Claim(
+						  ClaimTypes.Role,
+						  role));
+					}
+
+					if (credentials?.Username != null)
+						claims.Add(new Claim(
+						  JwtRegisteredClaimNames.Sub,
+						  credentials.Username));
+
+					var token = generator.GenerateToken(claims.ToArray());
+					context.Items.Add(Constants.MiddlewareTokenPassingKey, token);
 				}
-
-				var claimsResult = await identityResolver.GetClaimsAsync(credentials);
-				if (claimsResult == null)
-				{
-					await _next(context);
-					return;
-				}
-
-				var claims = claimsResult
-				  .Claims
-				  .Select(x => new Claim(
-					x.Key,
-					x.Value))
-				  .ToList();
-				if (claims.Any(x => x.ValueType == ClaimTypes.Role))
-				{
-					throw new InvalidOperationException("Can't provide roles through claims. Use the roles array instead of the claims result.");
-				}
-
-				foreach (var role in claimsResult.Roles)
-				{
-					claims.Add(new Claim(
-					  ClaimTypes.Role,
-					  role));
-				}
-
-				if (credentials != null)
-					claims.Add(new Claim(
-					  JwtRegisteredClaimNames.Sub,
-					  credentials.Username));
-
-				var token = generator.GenerateToken(claims.ToArray());
-				context.Items.Add(Constants.MiddlewareTokenPassingKey, token);
 			}
 
 			await _next(context);
