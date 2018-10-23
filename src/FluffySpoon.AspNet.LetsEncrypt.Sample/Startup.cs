@@ -52,7 +52,7 @@ namespace FluffySpoon.AspNet.LetsEncrypt.Sample
 					await acme.Account();
 				}
 
-				var order = await acme.NewOrder(new[] { "stuff.ngrok.io" });
+				var order = await acme.NewOrder(new[] { Program.Domain });
 
 				var authz = (await order.Authorizations()).First();
 				var challenge = await authz.Http();

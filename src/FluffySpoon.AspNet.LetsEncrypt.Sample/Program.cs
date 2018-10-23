@@ -15,6 +15,8 @@ namespace FluffySpoon.AspNet.LetsEncrypt.Sample
 {
 	public class Program
 	{
+		public const string Domain = "64c19176.ngrok.io";
+
 		public static void Main(string[] args)
 		{
 			CreateWebHostBuilder(args).Build().Run();
@@ -25,14 +27,14 @@ namespace FluffySpoon.AspNet.LetsEncrypt.Sample
 				.ConfigureLogging(l => l.AddConsole())
 				.UseKestrel(kestrelOptions =>
 				{
-					kestrelOptions.Listen(IPAddress.Parse("foo"), 80);
-					kestrelOptions.Listen(IPAddress.Parse("foo"), 443, listenOptions =>
+					kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
 					{
-						listenOptions.UseHttps(httpsOptions =>
-						{
-						});
+
 					});
 				})
+				.UseUrls(
+					"http://" + Domain,
+					"https://" + Domain)
 				.UseStartup<Startup>();
 	}
 }
