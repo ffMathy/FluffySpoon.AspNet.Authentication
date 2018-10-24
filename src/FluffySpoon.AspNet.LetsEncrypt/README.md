@@ -59,7 +59,7 @@ WebHost.CreateDefaultBuilder(args)
 
 Tada! Your application now supports SSL via LetsEncrypt, even from the first HTTPS request. It will even renew your certificate automatically in the background.
 
-# Configuring persistence
+# Optional: Other persistence strategies
 Persistence tells the middleware how to persist and retrieve the certificate, so that if the server restarts, the certificate can be re-used without generating a new one.
 
 ## File persistence
