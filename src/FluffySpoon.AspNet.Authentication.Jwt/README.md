@@ -3,7 +3,7 @@
 ### Configure the services
 Add the following code to your `Startup` class' `ConfigureServices` method with real values instead of the sample values:
 
-```
+```csharp
 services.AddFluffySpoonJwt<MySampleIdentityResolver>(
     new JwtSettings() {
 		Audience = "https://www.example.com",
@@ -22,7 +22,7 @@ services.AddFluffySpoonJwt<MySampleIdentityResolver>(
 ### Make an identity resolver
 The `MySampleIdentityResolver` class (seen below) is in this case is a class that authenticates a user and decides what claims and roles that user has. The implementation in this case will authenticate if the username given is "foo" and the password given is "bar", and let the server know that this user is both an "Administrator" and a "User". Furthermore, it will generate some claims that are sent to the client.
 
-```
+```csharp
 public class SampleIdentityResolver : IIdentityResolver
 {
 	public async Task<ClaimsResult> GetClaimsAsync(Credentials credentials)
@@ -51,7 +51,7 @@ public class SampleIdentityResolver : IIdentityResolver
 ### Inject the middleware
 Finally, inject the middleware in the `Startup` class' `Configure` method as such:
 
-```
+```csharp
 public void Configure()
 {
 	app.UseFluffySpoonJwt();

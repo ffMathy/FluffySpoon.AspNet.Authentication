@@ -18,6 +18,21 @@ namespace FluffySpoon.AspNet.LetsEncrypt.Sample
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddFluffySpoonLetsEncrypt(new LetsEncryptOptions()
+			{
+				Email = "some-email@github.com",
+				UseStaging = true,
+				Domains = new[] { Program.DomainToUse },
+				TimeUntilExpiryBeforeRenewal = TimeSpan.FromDays(30),
+				CertificateSigningRequest = new CsrInfo()
+				{
+					CountryName = "CountryNameStuff",
+					Locality = "LocalityStuff",
+					Organization = "OrganizationStuff",
+					OrganizationUnit = "OrganizationUnitStuff",
+					State = "StateStuff"
+				}
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -27,40 +42,12 @@ namespace FluffySpoon.AspNet.LetsEncrypt.Sample
 			{
 				app.UseDeveloperExceptionPage();
 			}
-
-			string challengeToken = null;
+			
+			app.UseFluffySpoonLetsEncrypt();
 
 			app.Run(async (context) =>
 			{
-				if(context.Request.Path.ToString().StartsWith("/.well-known/acme-challenge")) {
-					await context.Response.WriteAsync(challengeToken);
-					return;
-				}
-
-				AcmeContext acme;
-				if(!File.Exists("key.dat")) {
-					acme = new AcmeContext(WellKnownServers.LetsEncryptStagingV2);
-					await acme.NewAccount("foo", true);
-
-					var pemKey = acme.AccountKey.ToPem();
-					File.WriteAllText("key.dat", pemKey);
-				} else
-				{
-					var accountKey = KeyFactory.FromPem(File.ReadAllText("key.dat"));
-					acme = new AcmeContext(WellKnownServers.LetsEncryptStagingV2, accountKey);
-
-					await acme.Account();
-				}
-
-				var order = await acme.NewOrder(new[] { Program.Domain });
-
-				var authz = (await order.Authorizations()).First();
-				var challenge = await authz.Http();
-				challengeToken = challenge.KeyAuthz;
-
-				await challenge.Validate();
-
-				await context.Response.WriteAsync("Hello World!");
+				await context.Response.WriteAsync("Hello world");
 			});
 		}
 	}
