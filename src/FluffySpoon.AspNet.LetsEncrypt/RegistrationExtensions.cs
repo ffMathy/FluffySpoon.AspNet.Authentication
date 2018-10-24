@@ -9,25 +9,38 @@ namespace FluffySpoon.AspNet.LetsEncrypt
 	{
 		public static void AddFluffySpoonLetsEncrypt(
 		  this IServiceCollection services,
-		  LetsEncryptOptions options,
-		  ICertificatePersistenceStrategy certificatePersistenceStrategy = null)
+		  LetsEncryptOptions options)
 		{
-			certificatePersistenceStrategy = 
-				certificatePersistenceStrategy ??
-				new FileCertificatePersistenceStrategy("FluffySpoonAspNetLetsEncryptCertificate");
+			AddFluffySpoonLetsEncrypt(services, options, 
+				new FileCertificatePersistenceStrategy("FluffySpoonAspNetLetsEncryptCertificate"));
+		}
+		
+		public static void AddFluffySpoonLetsEncrypt(
+		  this IServiceCollection services,
+		  LetsEncryptOptions options,
+		  ICertificatePersistenceStrategy certificatePersistenceStrategy)
+		{
+			AddFluffySpoonLetsEncrypt(services, options,
+				(p) => certificatePersistenceStrategy);
+		}
 
+		public static void AddFluffySpoonLetsEncrypt(
+		  this IServiceCollection services,
+		  LetsEncryptOptions options,
+		  Func<IServiceProvider, ICertificatePersistenceStrategy> certificatePersistenceStrategyFactory)
+		{
 			services.AddSingleton<LetsEncryptCertificateContainer>();
 
 			services.AddSingleton(options);
-			services.AddSingleton(certificatePersistenceStrategy);
+			services.AddSingleton(certificatePersistenceStrategyFactory);
 
 			services.AddHostedService<LetsEncryptRenewalHostedService>();
-        }
+		}
 
 		public static void UseFluffySpoonLetsEncrypt(
 			this IApplicationBuilder app)
 		{
-            app.UseMiddleware<LetsEncryptMiddleware>();
+			app.UseMiddleware<LetsEncryptMiddleware>();
 		}
 	}
 }
