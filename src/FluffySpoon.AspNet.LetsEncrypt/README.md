@@ -33,7 +33,7 @@ services.AddFluffySpoonLetsEncrypt(new LetsEncryptOptions()
 ```
 
 ## Inject the middleware
-Finally, inject the middleware in the `Startup` class' `Configure` method as such:
+Inject the middleware in the `Startup` class' `Configure` method as such:
 
 ```csharp
 public void Configure()
