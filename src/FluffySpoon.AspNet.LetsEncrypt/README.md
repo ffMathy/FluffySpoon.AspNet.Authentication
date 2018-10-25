@@ -1,4 +1,4 @@
-The simplest LetsEncrypt setup for ASP .NET Core. No server configuration needed. 
+The simplest LetsEncrypt setup for ASP .NET Core. No server configuration needed other than making sure your app pool runs all the time (enabling Always On in Azure or setting StartMode of the app pool to AlwaysRunning in IIS).
 
 `install-package FluffySpoon.AspNet.LetsEncrypt`
 
