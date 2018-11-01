@@ -30,6 +30,8 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
       var now = DateTime.UtcNow;
 
       var claimsList = new List<Claim>();
+	  claimsList.AddRange(claims);
+
       claimsList.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
       claimsList.Add(
         new Claim(
@@ -40,7 +42,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
               .ToString(),
           ClaimValueTypes.Integer64));
 
-      var jwt = GenerateJwtToken(now, claims);
+      var jwt = GenerateJwtToken(now, claimsList);
       var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
       return encodedJwt;
     }
