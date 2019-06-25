@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace FluffySpoon.AspNet.Authentication.Jwt.Sample.Controllers
 {
-  [Route("api/[controller]")]
+  [Route("api/values")]
   public class ValuesController : Controller
   {
     [HttpGet("secret-stuff")]

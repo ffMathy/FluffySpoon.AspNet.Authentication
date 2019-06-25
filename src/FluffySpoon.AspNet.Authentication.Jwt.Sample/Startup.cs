@@ -36,8 +36,9 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
 				  SecretKey = "very secret - such wow"
 			  });
 
-			// Add framework services.
-			services.AddMvc();
+            // Add framework services.
+            services.AddControllers();
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,11 +47,13 @@ namespace FluffySpoon.AspNet.Authentication.Jwt.Sample
           IHostingEnvironment env, 
           ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddDebug();
-			
-			app.UseFluffySpoonJwt();
-
-            app.UseMvc();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseFluffySpoonJwt(); 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
