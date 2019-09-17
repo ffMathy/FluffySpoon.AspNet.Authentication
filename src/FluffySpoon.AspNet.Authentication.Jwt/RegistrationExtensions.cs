@@ -31,7 +31,7 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
-
+            
             services
 				.AddAuthentication(options => {
 					options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -49,6 +49,15 @@ namespace FluffySpoon.AspNet.Authentication.Jwt
 							{
 								context.Token = (string)context.HttpContext.Items[Constants.MiddlewareTokenPassingKey];
 							}
+
+                            if (context.Request.Query.ContainsKey("access_token"))
+                            {
+                                var path = context.HttpContext.Request.Path;
+                                if (!string.IsNullOrEmpty(context.Request.Query["access_token"]))
+                                {
+                                    context.Token = context.Request.Query["access_token"];
+                                }
+                            }
 
 							return Task.CompletedTask;
 						}
